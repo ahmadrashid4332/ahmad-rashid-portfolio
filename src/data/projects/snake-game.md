@@ -2,7 +2,7 @@
 title: Snake Game
 description: >-
   A browser version of Snake, built as a React single page app. Scoring, speed
-  and collision handling are all in the client, with no backend behind it.
+  and collision handling all run in the browser, with no backend behind it.
 tech:
   - React
   - Vite

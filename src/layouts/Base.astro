@@ -1,17 +1,54 @@
 ---
 import '../styles/tokens.css';
 import '../styles/base.css';
+import { NAME, EMAIL } from '../lib/site-config';
+import { getSite } from '../lib/content';
 
 interface Props {
 	title: string;
 	description: string;
+	/** Omit on pages that should not be indexed or shared, such as 404. */
+	shareable?: boolean;
 }
 
-const { title, description } = Astro.props;
+const { title, description, shareable = true } = Astro.props;
 
 // lang on <html> is WCAG 2.2 SC 3.1.1, Level A. It tells a screen reader which
 // pronunciation rules to use. spec.md section 4.2. Kept as a frontmatter note
 // rather than an HTML comment so it does not ship to every visitor.
+
+/*
+ * Every absolute URL derives from Astro.site, which is set once in
+ * astro.config.mjs. Nothing here hardcodes a domain.
+ *
+ * That is what makes the move to a custom domain a one-line change instead of a
+ * sweep through every tag, and it is why the canonical and the OG image URL
+ * cannot drift apart from each other.
+ */
+const canonical = new URL(Astro.url.pathname, Astro.site);
+
+// Relative OG image URLs simply fail to unfurl. This one is absolute.
+const ogImage = new URL('/og-image.png', Astro.site);
+
+const site = await getSite();
+
+/*
+ * JSON-LD Person.
+ *
+ * sameAs points at the two profiles. There is deliberately NO address,
+ * telephone or image property: those would reintroduce exactly the personal
+ * details the site excludes everywhere else, and structured data is not a
+ * loophole in that rule.
+ */
+const personSchema = {
+	'@context': 'https://schema.org',
+	'@type': 'Person',
+	name: NAME,
+	url: Astro.site?.toString(),
+	email: `mailto:${EMAIL}`,
+	jobTitle: 'Web Developer',
+	sameAs: [site.githubUrl, site.linkedinUrl],
+};
 ---
 
 <!doctype html>
@@ -19,8 +56,42 @@ const { title, description } = Astro.props;
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
+
 		<title>{title}</title>
 		<meta name="description" content={description} />
+		<link rel="canonical" href={canonical} />
+
+		{/* Scalable, and the one favicon format that can follow the viewer's
+		    theme. The 32px PNG covers engines that ignore SVG favicons. */}
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+
+		{
+			shareable && (
+				<>
+					<meta property="og:type" content="website" />
+					<meta property="og:title" content={title} />
+					<meta property="og:description" content={description} />
+					<meta property="og:url" content={canonical} />
+					<meta property="og:image" content={ogImage} />
+					<meta property="og:image:width" content="1200" />
+					<meta property="og:image:height" content="630" />
+					<meta property="og:locale" content="en" />
+					<meta name="twitter:card" content="summary_large_image" />
+					<meta name="twitter:title" content={title} />
+					<meta name="twitter:description" content={description} />
+					<meta name="twitter:image" content={ogImage} />
+				</>
+			)
+		}
+
+		{!shareable && <meta name="robots" content="noindex" />}
+
+		<script
+			type="application/ld+json"
+			set:html={JSON.stringify(personSchema)}
+		/>
 
 		{/*
 			Anti-flash script. Synchronous, inline, and in <head> before any
@@ -55,6 +126,17 @@ const { title, description } = Astro.props;
 				} catch (e) {}
 			})();
 		</script>
+
+		{/*
+			Vercel Web Analytics. The only analytics provider on the site, and
+			the only third-party script.
+
+			Loaded by path rather than through a package, so it adds no
+			dependency and no build step. It is served by Vercel itself once
+			Analytics is enabled for the project, and it 404s harmlessly
+			everywhere else, including local development.
+		*/}
+		<script defer src="/_vercel/insights/script.js"></script>
 
 		{/*
 			With JavaScript disabled the theme toggle and the copy control are

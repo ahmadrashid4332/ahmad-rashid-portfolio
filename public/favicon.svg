@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+	
+	<style>@media (prefers-color-scheme: dark){g{stroke:#4FD6A0}}</style>
+	<g fill="none" stroke="#0F6B4B" stroke-width="3.6992" stroke-linecap="butt" stroke-linejoin="round">
+		<path d="M10.24 47.6672 L19.379199999999997 17.2032 L28.5184 47.6672"/>
+		<path d="M13.164544 37.30944 L25.593856 37.30944"/>
+		<path d="M34.176 47.6672 L34.176 17.2032 L44.4536832 17.2032 A5.9953151999999985 7.920640000000001 0 0 1 44.4536832 33.04448 L34.176 33.04448"/>
+		<path d="M41.31328 33.04448 L51.584 47.6672"/>
+	</g>
+</svg>

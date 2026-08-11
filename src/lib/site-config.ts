@@ -22,8 +22,13 @@ export const RESUME_PATH = '/files/resume.pdf';
 
 /*
  * 50 to 60 characters. No leftover framework default.
+ *
+ * 57 characters. "currently studying" rather than "studying" is not padding to
+ * reach the floor: it is the exact wording the Panaversity framing rule
+ * requires, and the shorter version came in at 47.
  */
-export const SEO_TITLE = 'Ahmad Rashid, Web Developer studying agentic AI';
+export const SEO_TITLE =
+	'Ahmad Rashid, Web Developer currently studying agentic AI';
 
 /*
  * 150 to 160 characters.
