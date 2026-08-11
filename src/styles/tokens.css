@@ -1,0 +1,138 @@
+/*
+ * Design tokens. Mirrors design.md section 3.1 (colour), 4.2 (type) and 5.1 (space).
+ *
+ * The three-state theme contract, in this order and no other:
+ *   1. Light tokens on bare :root. This is the base.
+ *   2. Dark tokens under prefers-color-scheme, scoped so an explicit light
+ *      choice still wins.
+ *   3. Dark tokens again under [data-theme="dark"], so the manual toggle wins
+ *      over the system setting in both directions.
+ *
+ * No colour may have its only definition inside a media query or an attribute
+ * selector. Every token below is defined on bare :root first.
+ */
+
+:root {
+	/* ---- Colour: light ---- */
+	--bg: #fafafa;
+	--bg-subtle: #f1f1f2;
+	--text: #18181b;
+	--text-muted: #52525b;
+	--line: #e4e4e7;
+	--accent: #0f6b4b;
+	--accent-strong: #0a5239;
+	--btn-fill: #18181b;
+	--btn-fill-hover: #2a2a2e;
+	--btn-text: #fafafa;
+
+	color-scheme: light;
+
+	/* ---- Type ---- */
+	--font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+		'Helvetica Neue', Arial, sans-serif;
+	/* Mono is for tag chips only. Not nav, not buttons, not meta lines. */
+	--font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+
+	--weight-body: 400;
+	--weight-medium: 500;
+	--weight-heading: 600;
+
+	--size-h1: clamp(2.75rem, 1.4rem + 5.2vw, 5rem);
+	--size-hero-sentence: clamp(1.25rem, 1.1rem + 0.8vw, 1.625rem);
+	--size-h2: clamp(1.75rem, 1.3rem + 2vw, 2.5rem);
+	--size-h3: clamp(1.25rem, 1.15rem + 0.5vw, 1.5rem);
+	--size-body: clamp(1rem, 1rem + 0.1vw, 1.0625rem);
+	--size-meta: 0.875rem;
+	--size-tag: 0.8125rem;
+	/* The email address has its own scale so it never wraps mid-string at
+	 * 320px. See design.md section 5.7. */
+	--size-email: clamp(1.125rem, 0.9rem + 1.6vw, 2.25rem);
+
+	--track-h1: -0.03em;
+	--track-hero-sentence: -0.01em;
+	--track-h2: -0.02em;
+	--track-h3: -0.01em;
+	--track-tag: 0.01em;
+
+	--leading-h1: 1.02;
+	--leading-hero-sentence: 1.45;
+	--leading-h2: 1.15;
+	--leading-h3: 1.25;
+	--leading-body: 1.65;
+	--leading-meta: 1.5;
+	--leading-tag: 1;
+
+	/* ---- Space: 4px base ---- */
+	--space-1: 0.25rem;
+	--space-2: 0.5rem;
+	--space-3: 0.75rem;
+	--space-4: 1rem;
+	--space-6: 1.5rem;
+	--space-8: 2rem;
+	--space-12: 3rem;
+	--space-16: 4rem;
+	--space-24: 6rem;
+	--space-32: 8rem;
+
+	/* ---- Layout ---- */
+	--content-max: 1120px;
+	--gutter: clamp(1.25rem, 5vw, 3rem);
+	--section-rhythm: clamp(4.5rem, 10vw, 8rem);
+	--measure: 62ch;
+	--skills-label-col: 200px;
+
+	/* One radius token, on every surface and control. Hairlines and dividers
+	 * have no radius. No pill buttons, no sharp cards, no exceptions. */
+	--radius: 6px;
+
+	/* ---- Controls ---- */
+	--target-min: 44px;
+	--focus-width: 2px;
+	--focus-offset: 2px;
+
+	/* ---- Motion: level 3, CSS only ---- */
+	--duration-hover: 150ms;
+	--duration-active: 100ms;
+	--ease-out: ease-out;
+}
+
+/*
+ * 2. System preference. Guarded so that an explicit light choice made through
+ *    the toggle still wins over a dark system setting.
+ */
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme='light']) {
+		--bg: #0b0b0c;
+		--bg-subtle: #161618;
+		--text: #f4f4f5;
+		--text-muted: #a1a1aa;
+		--line: #27272a;
+		--accent: #4fd6a0;
+		--accent-strong: #7ce6bc;
+		--btn-fill: #f4f4f5;
+		--btn-fill-hover: #e2e2e5;
+		--btn-text: #0b0b0c;
+
+		color-scheme: dark;
+	}
+}
+
+/*
+ * 3. Explicit choice. Wins over the system setting in both directions: this
+ *    block handles dark-on-light-system, and the :not() guard above handles
+ *    light-on-dark-system.
+ */
+:root[data-theme='dark'] {
+	--bg: #0b0b0c;
+	--bg-subtle: #161618;
+	--text: #f4f4f5;
+	--text-muted: #a1a1aa;
+	--line: #27272a;
+	--accent: #4fd6a0;
+	--accent-strong: #7ce6bc;
+	--btn-fill: #f4f4f5;
+	--btn-fill-hover: #e2e2e5;
+	--btn-text: #0b0b0c;
+
+	color-scheme: dark;
+}

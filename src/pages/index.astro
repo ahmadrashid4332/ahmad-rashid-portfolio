@@ -1,0 +1,67 @@
+---
+/*
+ * PHASE 2 SCAFFOLD ONLY.
+ *
+ * This page exists so the token system and the anti-flash script can be
+ * verified against Gate 2 before any section is built. It is replaced wholesale
+ * in Phase 4, where index.astro composes section components and holds no
+ * content of its own.
+ */
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Ahmad Rashid" description="Portfolio, in progress.">
+	<main class="container section">
+		<h1>Ahmad Rashid</h1>
+		<p class="prose" style="margin-top: var(--space-6); color: var(--text-muted);">
+			Token and theme verification page. Replaced in Phase 4.
+		</p>
+
+		<div style="margin-top: var(--space-12); display: grid; gap: var(--space-4);">
+			<button type="button" data-theme-toggle data-requires-js>
+				Toggle theme
+			</button>
+			<p style="color: var(--text-muted); font-size: var(--size-meta);">
+				Current: <span data-theme-readout>system</span>
+			</p>
+		</div>
+	</main>
+</Base>
+
+<script>
+	// Phase 2 verification only. The real toggle is a component built in
+	// Phase 4, where two instances stay in sync.
+	const root = document.documentElement;
+	const readout = document.querySelector('[data-theme-readout]');
+
+	function current() {
+		const attr = root.getAttribute('data-theme');
+		if (attr === 'dark' || attr === 'light') return attr;
+		return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+	}
+
+	function render() {
+		if (readout) {
+			readout.textContent = root.hasAttribute('data-theme')
+				? `${current()} (explicit)`
+				: `${current()} (system)`;
+		}
+	}
+
+	document.querySelector('[data-theme-toggle]')?.addEventListener('click', () => {
+		const next = current() === 'dark' ? 'light' : 'dark';
+		root.setAttribute('data-theme', next);
+		try {
+			localStorage.setItem('theme', next);
+		} catch (e) {
+			// Persistence unavailable. The toggle still works for this session.
+		}
+		render();
+	});
+
+	window
+		.matchMedia('(prefers-color-scheme: dark)')
+		.addEventListener('change', render);
+
+	render();
+</script>

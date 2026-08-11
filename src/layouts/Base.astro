@@ -1,0 +1,76 @@
+---
+import '../styles/tokens.css';
+import '../styles/base.css';
+
+interface Props {
+	title: string;
+	description: string;
+}
+
+const { title, description } = Astro.props;
+
+// lang on <html> is WCAG 2.2 SC 3.1.1, Level A. It tells a screen reader which
+// pronunciation rules to use. spec.md section 4.2. Kept as a frontmatter note
+// rather than an HTML comment so it does not ship to every visitor.
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>{title}</title>
+		<meta name="description" content={description} />
+
+		{/*
+			Anti-flash script. Synchronous, inline, and in <head> before any
+			stylesheet renders. This is deliberately render-blocking and is one
+			of the few legitimate uses (research.md section 3).
+
+			It must stay inline and tiny. Moving it to an external file would
+			defeat the purpose, because the fetch would happen after first paint.
+
+			Every localStorage access is wrapped, because private browsing can
+			throw on both read and write. An uncaught exception here is a white
+			page, not a degraded one: the script blocks rendering.
+
+			The stored value is validated against the two known strings rather
+			than trusted, so a corrupt or hand-edited value falls back to the
+			system preference instead of stamping garbage onto the element.
+
+			The attribute is stamped ONLY when a valid stored preference exists.
+			With no override, no attribute is written and the media query in
+			tokens.css does the work, which is what makes the site follow a
+			change to the OS theme while the page is open (spec.md section 5.1).
+			Stamping unconditionally would pin the theme at first paint and
+			silently break that case.
+		*/}
+		<script is:inline>
+			(function () {
+				try {
+					var stored = localStorage.getItem('theme');
+					if (stored === 'dark' || stored === 'light') {
+						document.documentElement.setAttribute('data-theme', stored);
+					}
+				} catch (e) {}
+			})();
+		</script>
+
+		{/*
+			With JavaScript disabled the theme toggle and the copy control are
+			hidden rather than left as visible controls that silently do nothing
+			(spec.md section 5.1, design.md section 6). Everything else is
+			identical: the site renders fully in the system-preferred theme.
+		*/}
+		<noscript>
+			<style>
+				[data-requires-js] {
+					display: none !important;
+				}
+			</style>
+		</noscript>
+	</head>
+	<body>
+		<slot />
+	</body>
+</html>
