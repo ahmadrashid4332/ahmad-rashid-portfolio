@@ -1,0 +1,240 @@
+# Sveltia CMS configuration.
+#
+# Deliberately Decap-compatible. Sveltia is pre-1.0 and effectively
+# single-maintainer, so config portability is the exit route: if it stops
+# shipping, this same file runs under Decap. That insurance must not be traded
+# away for Sveltia-only config features.
+#
+# EVERY FIELD HERE MUST MIRROR src/content.config.ts EXACTLY.
+#
+# That mirroring is a standing correctness requirement, not one-time setup. Zod
+# is the only schema; this file is a form that must not be able to emit a shape
+# zod would reject. Where the form CANNOT express a zod rule, it is called out
+# in a comment rather than left to be discovered by a failed build.
+
+backend:
+  name: github
+  repo: ahmadrashid4332/ahmad-rashid-portfolio
+
+  # PINNED EXPLICITLY. The worst failure mode available here is a wrong-branch
+  # edit: the save succeeds, the commit lands, and the site never changes.
+  # Silent, and very hard to diagnose from a phone.
+  branch: main
+
+  # Sign in with a fine-grained personal access token, scoped to this one
+  # repository, with an expiry.
+  #
+  # NEVER a classic repo-scope token. The token lives in the phone browser's
+  # localStorage, and a classic token would grant write access to every
+  # repository he owns from that same storage.
+  auth_type: pat
+
+# Saving from a phone should not queue a build per field. Each save is a commit
+# is a build, and Vercel Hobby runs one build at a time.
+publish_mode: simple
+
+# Site-wide default. Projects override it below, because their media has to land
+# somewhere Astro will process.
+media_folder: public/files
+public_folder: /files
+
+collections:
+  # ---------------------------------------------------------------------------
+  # Projects
+  # ---------------------------------------------------------------------------
+  - name: projects
+    label: Projects
+    label_singular: Project
+    folder: src/data/projects
+    create: true
+    delete: true
+    format: yaml-frontmatter
+    extension: md
+    slug: '{{slug}}'
+    summary: '{{order}}. {{title}}'
+    sortable_fields: [order, title]
+
+    # Drag-and-drop plus arrow buttons, persisting the order field. This is a
+    # literal match for the requirement and is why Sveltia was chosen over
+    # Keystatic, whose sorting issue has been open since 2024.
+    #
+    # The rendered page sorts ascending on order, so the list here reads top to
+    # bottom exactly as the site does. If those two ever disagree, the panel is
+    # lying to him.
+    orderable: true
+
+    # MEDIA OVERRIDE, AND THE REASON FOR IT.
+    #
+    # Uploads land in src/assets/projects/ rather than public/, so that Astro
+    # converts them to AVIF and WebP and infers width and height. Nothing in
+    # public/ is processed: a photo straight off a phone would ship at full
+    # size with no dimensions, breaking the largest single lever against CLS
+    # and potentially exceeding the entire page budget in one upload.
+    #
+    # public_folder is the RELATIVE path written into the frontmatter. Astro's
+    # image() helper resolves it from the entry file, and entries live in
+    # src/data/projects/, so ../../assets/projects/ lands on src/assets/projects/.
+    # These two values are a matched pair. Changing one without the other
+    # produces entries that fail the build.
+    media_folder: /src/assets/projects
+    public_folder: ../../assets/projects
+
+    fields:
+      - { name: title, label: Title, widget: string, required: true }
+
+      - name: description
+        label: Description
+        widget: text
+        required: true
+        hint: >-
+          One or two sentences: what it does, and how it was built. Describe
+          your work, not the tool you used to build it.
+
+      - name: tech
+        label: Tech
+        widget: list
+        required: true
+        min: 1
+        field: { name: item, label: Tech, widget: string }
+        hint: What it is actually built with. Do not list things you did not use.
+
+      - name: liveUrl
+        label: Live URL
+        widget: string
+        required: true
+        pattern:
+          ['^https://\S+$', 'Must be a full https:// address']
+        hint: The only outbound link on the card. A project without one does not ship.
+
+      - name: order
+        label: Order
+        widget: number
+        required: true
+        value_type: int
+        default: 1
+        hint: 1 shows first and is the featured card. Use drag and drop instead of editing this by hand.
+
+      - name: image
+        label: Screenshot
+        widget: image
+        required: false
+        hint: Optional. Leave empty and the card renders without an image area.
+
+      # KNOWN GAP, AND IT IS DELIBERATE.
+      #
+      # Zod requires imageAlt if and only if image is set. Decap-compatible
+      # config cannot express a conditional required, so this field is declared
+      # optional and the rule is enforced only at build time.
+      #
+      # Consequence: saving a screenshot with no alt text passes this form and
+      # then FAILS THE BUILD. The last good deploy stays live, so the site does
+      # not break, but from a phone it looks like the edit worked.
+      #
+      # Fixing this properly means nesting image and alt into one object widget
+      # where both are required together, which would change the zod shape.
+      # That is a decision to take deliberately, not a config tweak.
+      - name: imageAlt
+        label: Screenshot description
+        widget: string
+        required: false
+        hint: >-
+          REQUIRED whenever you add a screenshot, or the site will fail to
+          build. Describe the project itself, never the word "screenshot".
+
+  # ---------------------------------------------------------------------------
+  # Site content
+  # ---------------------------------------------------------------------------
+  - name: site
+    label: Site content
+    files:
+      - name: site
+        label: Site content
+        file: src/data/site.md
+        format: yaml-frontmatter
+        fields:
+          - name: heroSentence
+            label: Hero sentence
+            widget: text
+            required: true
+            hint: >-
+              Carries the role and what you do, in one sentence. 20 words
+              maximum. This is the first thing every visitor reads.
+
+          - name: about
+            label: About
+            widget: text
+            required: true
+            hint: Three to five sentences, first person.
+
+          - name: githubUrl
+            label: GitHub URL
+            widget: string
+            required: true
+            pattern: ['^https://\S+$', 'Must be a full https:// address']
+
+          - name: linkedinUrl
+            label: LinkedIn URL
+            widget: string
+            required: true
+            pattern: ['^https://\S+$', 'Must be a full https:// address']
+
+  # ---------------------------------------------------------------------------
+  # Skills
+  # ---------------------------------------------------------------------------
+  #
+  # NO PROFICIENCY FIELD MAY EVER BE ADDED HERE. No level, no percentage, no
+  # rating, no star count, and no ordering that implies rank. This is the one
+  # place such a field would look harmless, which is exactly why the prohibition
+  # is written down at the form as well as at the schema.
+  - name: skills
+    label: Skills
+    files:
+      - name: skills
+        label: Skills
+        file: src/data/skills.md
+        format: yaml-frontmatter
+        fields:
+          - name: groups
+            label: Skill groups
+            widget: list
+            required: true
+            min: 1
+            summary: '{{fields.category}}'
+            fields:
+              - { name: category, label: Category, widget: string, required: true }
+              - name: items
+                label: Skills
+                widget: list
+                required: true
+                min: 1
+                field: { name: item, label: Skill, widget: string }
+                hint: Only skills you actually have. An empty group is not rendered.
+
+  # ---------------------------------------------------------------------------
+  # Resume
+  # ---------------------------------------------------------------------------
+  #
+  # KNOWN GAP, SEE THE NOTE IN THE README.
+  #
+  # The public link must never change across updates, which means the file has
+  # to land at public/files/resume.pdf every time. Decap-compatible config
+  # cannot force an uploaded file to be renamed, so this depends on the file
+  # being named resume.pdf at upload time. Uploading holiday-cv-final.pdf will
+  # publish it alongside the old one and leave the button pointing at the old.
+  - name: resume
+    label: Resume
+    files:
+      - name: resume
+        label: Resume PDF
+        file: src/data/resume.md
+        format: yaml-frontmatter
+        media_folder: /public/files
+        public_folder: /files
+        fields:
+          - name: file
+            label: Resume PDF
+            widget: file
+            required: true
+            hint: >-
+              The file must be named resume.pdf before you upload it, so the
+              public link keeps working for anyone you already sent it to.

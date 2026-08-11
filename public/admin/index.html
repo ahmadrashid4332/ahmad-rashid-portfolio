@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+		<!--
+			Belt and braces with the X-Robots-Tag header in vercel.json and the
+			disallow in robots.txt. No Git-based CMS noindexes its admin route by
+			default, and without it this login page turns up in search results
+			for his name. Three mechanisms because the failure is embarrassing
+			and the cost is one line each.
+		-->
+		<meta name="robots" content="noindex, nofollow" />
+
+		<title>Content admin</title>
+	</head>
+	<body>
+		<!--
+			VERSION IS PINNED, DELIBERATELY. Do not change this to a range or to
+			"latest".
+
+			Sveltia loads from a CDN and is pre-1.0 with an extreme release
+			cadence: 621 published versions, twelve of them in the nine days to
+			2026-08-11. Tracking latest means a breaking change can take this
+			admin panel down with no deploy on our side and no warning.
+
+			The trade accepted in exchange: this is now a dependency somebody has
+			to bump on purpose. It is not maintenance-free.
+
+			Pinned 2026-08-12 to 0.187.0, the latest at the time. Bumping is a
+			one-line change here, and should be followed by actually logging in
+			and saving something before it is called done.
+		-->
+		<script src="https://unpkg.com/@sveltia/cms@0.187.0/dist/sveltia-cms.js"></script>
+	</body>
+</html>

@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+# The admin panel. Paired with an X-Robots-Tag header in vercel.json, which is
+# the mechanism that actually keeps it out of an index. This disallow is the
+# polite half: it asks crawlers not to fetch the page at all.
+#
+# Neither is default behaviour for any Git-based CMS. Without them the login
+# page turns up in search results for his name.
+Disallow: /admin
+
+# No Sitemap line. sitemap.xml is deliberately skipped as ceremony for a
+# one-page site, so pointing at one would be a dead reference.
