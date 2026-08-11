@@ -147,6 +147,65 @@ a:hover {
 	scroll-margin-top: var(--space-8);
 }
 
+/* ---- Controls ---- */
+
+/*
+ * One button system. Two variants, no third (section 6).
+ *
+ * Minimum target 44x44px on every interactive element. 24x24 is the WCAG floor,
+ * not the target. Labels are one to three words and must not wrap at desktop.
+ */
+.btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--space-2);
+	min-height: var(--target-min);
+	padding: var(--space-3) var(--space-6);
+	border: 1px solid transparent;
+	border-radius: var(--radius);
+	font-size: var(--size-body);
+	font-weight: var(--weight-medium);
+	line-height: 1;
+	text-align: center;
+	text-decoration: none;
+	white-space: nowrap;
+	cursor: pointer;
+	transition:
+		background-color var(--duration-hover) var(--ease-out),
+		border-color var(--duration-hover) var(--ease-out),
+		color var(--duration-hover) var(--ease-out),
+		transform var(--duration-active) var(--ease-out);
+}
+
+/* Solid near-black on light, solid near-white on dark. The accent is never a
+ * button fill: it is rationed to links, focus, and small marks so that it
+ * always reads as a signal (section 3). */
+.btn-primary {
+	background-color: var(--btn-fill);
+	color: var(--btn-text);
+}
+
+.btn-primary:hover {
+	background-color: var(--btn-fill-hover);
+	color: var(--btn-text);
+}
+
+.btn-quiet {
+	background-color: transparent;
+	border-color: var(--line);
+	color: var(--text);
+}
+
+.btn-quiet:hover {
+	border-color: var(--text-muted);
+	color: var(--text);
+}
+
+.btn:active {
+	transform: translateY(1px);
+}
+
 /* ---- Accessibility helpers ---- */
 
 /* Visually hidden but announced. Used for the copy-confirmation live region

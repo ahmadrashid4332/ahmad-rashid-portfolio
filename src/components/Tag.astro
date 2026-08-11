@@ -1,0 +1,37 @@
+---
+/*
+ * One tag component, used by both the Skills section and the project tech
+ * lists. Not two components that happen to look alike (design.md section 5.6).
+ *
+ * Non-interactive, so there is no hover state and no 44px target requirement.
+ */
+interface Props {
+	label: string;
+}
+
+const { label } = Astro.props;
+---
+
+<li class="tag">{label}</li>
+
+<style>
+	.tag {
+		display: inline-flex;
+		align-items: center;
+		padding: var(--space-2) var(--space-3);
+		border-radius: var(--radius);
+		background-color: var(--bg-subtle);
+		/*
+		 * At 13px this is small text, so it must clear 4.5:1 rather than the
+		 * 3:1 large-text allowance. --text-muted on --bg-subtle measures
+		 * 6.85:1 light and 7.05:1 dark (design.md section 3.1).
+		 */
+		color: var(--text-muted);
+		font-family: var(--font-mono);
+		font-size: var(--size-tag);
+		font-weight: var(--weight-medium);
+		letter-spacing: var(--track-tag);
+		line-height: var(--leading-tag);
+		/* No border. The fill alone separates it from body text. */
+	}
+</style>

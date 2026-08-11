@@ -1,0 +1,168 @@
+---
+import { Icon } from 'astro-icon/components';
+
+/*
+ * One control, rendered twice: once in the nav and once in the footer.
+ *
+ * They are not two competing controls. Activating either updates data-theme,
+ * persists once, and updates the OTHER instance's state in the same tick. A
+ * footer button announcing the opposite state would be the page telling the
+ * visitor something false (spec.md section 5.1).
+ *
+ * Why a second one exists at all: the nav is static rather than sticky, so once
+ * a visitor scrolls past it the nav toggle is gone. Without a footer instance,
+ * someone at the bottom of the page would have to scroll the whole way back up
+ * to reach the only control (design.md section 5.8).
+ *
+ * data-requires-js hides it when scripting is off, rather than leaving a
+ * visible control that silently does nothing.
+ */
+---
+
+<button
+	type="button"
+	class="theme-toggle"
+	data-theme-toggle
+	data-requires-js
+	aria-pressed="false"
+>
+	<span class="icon icon-sun" aria-hidden="true">
+		<Icon name="ph:sun" />
+	</span>
+	<span class="icon icon-moon" aria-hidden="true">
+		<Icon name="ph:moon" />
+	</span>
+	<span class="visually-hidden" data-theme-toggle-label>Switch to dark theme</span>
+</button>
+
+<style>
+	.theme-toggle {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-width: var(--target-min);
+		min-height: var(--target-min);
+		padding: var(--space-2);
+		border: 1px solid transparent;
+		border-radius: var(--radius);
+		background-color: transparent;
+		color: var(--text-muted);
+		cursor: pointer;
+		transition:
+			color var(--duration-hover) var(--ease-out),
+			border-color var(--duration-hover) var(--ease-out),
+			transform var(--duration-active) var(--ease-out);
+	}
+
+	.theme-toggle:hover {
+		color: var(--text);
+		border-color: var(--line);
+	}
+
+	.theme-toggle:active {
+		transform: translateY(1px);
+	}
+
+	.icon {
+		display: none;
+		font-size: 1.25rem;
+		line-height: 0;
+	}
+
+	/*
+	 * Which glyph shows is driven purely by CSS, from the same three-state
+	 * contract the tokens use. No JavaScript decides this, so the correct icon
+	 * is painted on the very first frame alongside the correct theme.
+	 */
+	.icon-moon {
+		display: inline-flex;
+	}
+
+	@media (prefers-color-scheme: dark) {
+		:global(:root:not([data-theme='light'])) .icon-moon {
+			display: none;
+		}
+
+		:global(:root:not([data-theme='light'])) .icon-sun {
+			display: inline-flex;
+		}
+	}
+
+	:global(:root[data-theme='dark']) .icon-moon {
+		display: none;
+	}
+
+	:global(:root[data-theme='dark']) .icon-sun {
+		display: inline-flex;
+	}
+
+	:global(:root[data-theme='light']) .icon-moon {
+		display: inline-flex;
+	}
+
+	:global(:root[data-theme='light']) .icon-sun {
+		display: none;
+	}
+</style>
+
+<script>
+	/*
+	 * Astro bundles a component script once no matter how many times the
+	 * component is used, so this runs a single time and addresses every
+	 * instance. That is what keeps the two toggles in sync by construction
+	 * rather than by remembering to.
+	 */
+	const root = document.documentElement;
+	const toggles = document.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]');
+	const systemDark = window.matchMedia('(prefers-color-scheme: dark)');
+
+	function currentTheme(): 'dark' | 'light' {
+		const attr = root.getAttribute('data-theme');
+		if (attr === 'dark' || attr === 'light') return attr;
+		return systemDark.matches ? 'dark' : 'light';
+	}
+
+	/** Reflects state onto every instance, not just the one that was clicked. */
+	function syncAll() {
+		const isDark = currentTheme() === 'dark';
+
+		toggles.forEach((toggle) => {
+			toggle.setAttribute('aria-pressed', String(isDark));
+
+			const label = toggle.querySelector('[data-theme-toggle-label]');
+			if (label) {
+				label.textContent = isDark ? 'Switch to light theme' : 'Switch to dark theme';
+			}
+		});
+	}
+
+	toggles.forEach((toggle) => {
+		toggle.addEventListener('click', () => {
+			const next = currentTheme() === 'dark' ? 'light' : 'dark';
+			root.setAttribute('data-theme', next);
+
+			try {
+				localStorage.setItem('theme', next);
+			} catch {
+				/*
+				 * Private browsing, or storage blocked. The toggle still works
+				 * for this session, it simply does not persist. It must never
+				 * throw: the theme is otherwise fine and the page is already
+				 * painted.
+				 */
+			}
+
+			syncAll();
+		});
+	});
+
+	/*
+	 * With no explicit override set, the CSS follows the OS live. Keep the
+	 * button state in step with it (spec.md section 5.1).
+	 */
+	systemDark.addEventListener('change', () => {
+		if (!root.hasAttribute('data-theme')) syncAll();
+	});
+
+	syncAll();
+</script>

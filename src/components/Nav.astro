@@ -1,0 +1,121 @@
+---
+import ThemeToggle from './ThemeToggle.astro';
+
+/*
+ * Static, not sticky (design.md section 5.4).
+ *
+ * On a six-section page the nav scrolls away and the page ends with Contact and
+ * the footer, so nothing important becomes unreachable. This removes the WCAG
+ * 2.2 SC 2.4.11 problem outright, rather than mitigating it: there is no fixed
+ * element that a focused control could end up hidden behind.
+ *
+ * No hamburger at any width. On mobile the anchors are dropped, not buried:
+ * scrolling is the navigation on a page this short.
+ *
+ * No active-section marker. Scroll-spy would be a third authored JS behaviour
+ * against a budget of two, spent on a nav that scrolls out of view.
+ */
+const anchors = [
+	{ href: '#about', label: 'About' },
+	{ href: '#skills', label: 'Skills' },
+	{ href: '#projects', label: 'Projects' },
+	{ href: '#contact', label: 'Contact' },
+];
+---
+
+<header class="site-header">
+	<div class="container header-inner">
+		<a class="wordmark" href="/" aria-label="Ahmad Rashid, home">AR</a>
+
+		<nav aria-label="Sections">
+			<ul class="anchors">
+				{
+					anchors.map((anchor) => (
+						<li>
+							<a href={anchor.href}>{anchor.label}</a>
+						</li>
+					))
+				}
+			</ul>
+		</nav>
+
+		<div class="actions">
+			<ThemeToggle />
+			{/* Quiet in the nav so it does not compete with the hero. Primary in
+			    Contact, where it is the action someone is there to take. Same
+			    label both times: one intent with one name. */}
+			<a class="btn btn-quiet resume" href="/files/resume.pdf" download>Resume</a>
+		</div>
+	</div>
+</header>
+
+<style>
+	.site-header {
+		border-bottom: 1px solid var(--line);
+	}
+
+	.header-inner {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-4);
+		min-height: 56px;
+	}
+
+	.wordmark {
+		font-size: var(--size-body);
+		font-weight: var(--weight-heading);
+		letter-spacing: -0.02em;
+		color: var(--text);
+		text-decoration: none;
+	}
+
+	.wordmark:hover {
+		color: var(--text);
+	}
+
+	.anchors {
+		display: none;
+		gap: var(--space-6);
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+
+	.anchors a {
+		display: inline-flex;
+		align-items: center;
+		min-height: var(--target-min);
+		color: var(--text-muted);
+		font-size: var(--size-body);
+		font-weight: var(--weight-medium);
+		text-decoration: none;
+	}
+
+	.anchors a:hover {
+		color: var(--text);
+	}
+
+	.actions {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+	}
+
+	.resume {
+		padding: var(--space-2) var(--space-4);
+		font-size: var(--size-meta);
+	}
+
+	@media (min-width: 768px) {
+		.header-inner {
+			min-height: 64px;
+			/* Hard cap 80px. */
+			max-height: 80px;
+		}
+
+		.anchors {
+			display: flex;
+		}
+	}
+</style>

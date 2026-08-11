@@ -1,0 +1,63 @@
+---
+/*
+ * Editorial manifesto hero, left aligned, type only (design.md section 5.3).
+ *
+ * Exactly three elements. Nothing else: no eyebrow, no availability pill, no
+ * location line, no tech strip, no social icons, no resume button, no scroll
+ * cue. Resume lives in the nav and in Contact, where someone acting on interest
+ * actually looks.
+ *
+ * The role line is carried INSIDE the sentence rather than set as a fourth
+ * element. That is what keeps the stack at three and the eyebrow count at zero.
+ *
+ * Not centred: variance 6 rules that out. Not full height either. The top of
+ * About is deliberately visible below the fold, which does the job a "scroll"
+ * cue would do without the banned label.
+ */
+interface Props {
+	sentence: string;
+}
+
+const { sentence } = Astro.props;
+---
+
+<section class="hero container">
+	<h1>Ahmad Rashid</h1>
+	<p class="sentence">{sentence}</p>
+	<a class="btn btn-primary" href="#projects">View projects</a>
+</section>
+
+<style>
+	.hero {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-8);
+		padding-block: var(--space-16) var(--section-rhythm);
+	}
+
+	.sentence {
+		max-width: 28ch;
+		color: var(--text-muted);
+		font-size: var(--size-hero-sentence);
+		letter-spacing: var(--track-hero-sentence);
+		line-height: var(--leading-hero-sentence);
+	}
+
+	@media (min-width: 768px) {
+		.hero {
+			/*
+			 * Not 100dvh. The top of the next section stays visible.
+			 */
+			min-height: 72svh;
+			justify-content: center;
+			/* Capped so the hero does not float down the viewport. */
+			padding-block: var(--space-24) var(--section-rhythm);
+		}
+
+		.sentence {
+			/* 3 lines maximum at desktop. */
+			max-width: 34ch;
+		}
+	}
+</style>

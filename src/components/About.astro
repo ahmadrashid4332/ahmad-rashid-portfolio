@@ -1,0 +1,26 @@
+---
+/*
+ * Single prose column, indented to the rail, capped at 62ch. Deliberately the
+ * narrowest thing on the page (design.md section 5.2).
+ *
+ * No split-header pattern: the heading stacks above its body copy rather than
+ * sitting in a left column with the paragraph floating on the right.
+ */
+interface Props {
+	text: string;
+}
+
+const { text } = Astro.props;
+---
+
+<section id="about" class="container section">
+	<h2>About</h2>
+	<p class="prose body">{text}</p>
+</section>
+
+<style>
+	.body {
+		margin-top: var(--space-8);
+		color: var(--text-muted);
+	}
+</style>

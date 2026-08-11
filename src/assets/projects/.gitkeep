@@ -1,0 +1,12 @@
+# Screenshots upload here from the admin panel.
+#
+# This directory rather than public/ is deliberate. Astro does not process
+# anything in public/, so a photo taken on a phone would ship at full size with
+# no intrinsic width or height, breaking the largest single lever against CLS
+# and potentially exceeding the whole page budget in one upload.
+#
+# Files here go through the image() helper in src/content.config.ts, which
+# converts to AVIF and WebP and infers dimensions automatically.
+#
+# Tracked so the folder exists in a fresh clone and Sveltia's media_folder
+# resolves. Git does not track empty directories.

@@ -1,0 +1,204 @@
+---
+import { Icon } from 'astro-icon/components';
+import { EMAIL } from '../lib/site-config';
+
+/*
+ * Email link only. No form, no backend, no spam surface.
+ *
+ * The address is set large as the section's main visual element: the email
+ * address IS the visual (design.md section 5.7).
+ *
+ * It is VISIBLE AS TEXT, not hidden behind a label like "Email me". A visitor
+ * must be able to read and manually select it even if every scripted behaviour
+ * fails, because selecting the text is the fallback when the clipboard API is
+ * unavailable.
+ *
+ * Never obfuscated with JS assembly or entity encoding "for spam". That breaks
+ * copy/paste and screen readers for a defence scrapers beat trivially.
+ */
+---
+
+<section id="contact" class="container section">
+	<h2>Contact</h2>
+
+	<div class="row">
+		<a class="address" href={`mailto:${EMAIL}`}>{EMAIL}</a>
+
+		<button type="button" class="copy" data-copy-email data-requires-js>
+			<span class="glyph glyph-copy" aria-hidden="true">
+				<Icon name="ph:copy" />
+			</span>
+			<span class="glyph glyph-check" aria-hidden="true" hidden>
+				<Icon name="ph:check" />
+			</span>
+			<span class="visually-hidden">Copy email address</span>
+		</button>
+	</div>
+
+	{/*
+		Confirmation is announced to assistive tech, not conveyed by the visual
+		tick alone. polite rather than assertive: it is a courtesy, not an
+		interruption.
+	*/}
+	<p class="visually-hidden" role="status" aria-live="polite" data-copy-status></p>
+
+	<a class="btn btn-primary resume" href="/files/resume.pdf" download>Resume</a>
+</section>
+
+<style>
+	.row {
+		display: flex;
+		align-items: center;
+		gap: var(--space-3);
+		margin-top: var(--space-8);
+	}
+
+	.address {
+		/*
+		 * Its own scale, not h2. At the h2 minimum of 1.75rem inside a 320px
+		 * viewport there is room for roughly 20 characters on a line, and this
+		 * address is 25. Setting it at full h2 scale would wrap it mid-address,
+		 * which reads as a rendering bug and makes manual selection harder.
+		 */
+		font-size: var(--size-email);
+		font-weight: var(--weight-heading);
+		letter-spacing: var(--track-h2);
+		line-height: 1.2;
+		color: var(--text);
+		text-decoration: none;
+		/* Shrinks rather than wraps. It never breaks inside the local part or
+		 * inside the domain. */
+		white-space: nowrap;
+		min-width: 0;
+	}
+
+	.address:hover {
+		color: var(--accent);
+	}
+
+	.copy {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		flex: none;
+		min-width: var(--target-min);
+		min-height: var(--target-min);
+		padding: var(--space-2);
+		border: 1px solid var(--line);
+		border-radius: var(--radius);
+		background-color: transparent;
+		color: var(--text-muted);
+		cursor: pointer;
+		transition:
+			color var(--duration-hover) var(--ease-out),
+			border-color var(--duration-hover) var(--ease-out),
+			transform var(--duration-active) var(--ease-out);
+	}
+
+	.copy:hover {
+		color: var(--text);
+		border-color: var(--text-muted);
+	}
+
+	.copy:active {
+		transform: translateY(1px);
+	}
+
+	.glyph {
+		display: inline-flex;
+		font-size: 1.125rem;
+		line-height: 0;
+	}
+
+	.glyph[hidden] {
+		display: none;
+	}
+
+	/* The tick is --accent because that is the page's only accent, not because
+	 * green means success. Nothing else here uses colour to carry meaning. */
+	.glyph-check {
+		color: var(--accent);
+	}
+
+	.resume {
+		margin-top: var(--space-8);
+	}
+
+	@media (max-width: 400px) {
+		.address {
+			font-size: clamp(0.9rem, 4.2vw, 1.125rem);
+		}
+	}
+</style>
+
+<script>
+	const button = document.querySelector<HTMLButtonElement>('[data-copy-email]');
+	const status = document.querySelector<HTMLElement>('[data-copy-status]');
+	const link = document.querySelector<HTMLAnchorElement>('.address');
+
+	if (button && link) {
+		const copyGlyph = button.querySelector<HTMLElement>('.glyph-copy');
+		const checkGlyph = button.querySelector<HTMLElement>('.glyph-check');
+		const address = link.textContent?.trim() ?? '';
+
+		/*
+		 * One timer, reused. Repeated clicks are idempotent: the confirmation
+		 * state resets cleanly rather than stacking timers that race each other
+		 * back to the copy glyph.
+		 */
+		let resetTimer: ReturnType<typeof setTimeout> | undefined;
+
+		function showConfirmed() {
+			if (copyGlyph) copyGlyph.hidden = true;
+			if (checkGlyph) checkGlyph.hidden = false;
+			if (status) status.textContent = 'Email address copied to clipboard';
+
+			clearTimeout(resetTimer);
+			resetTimer = setTimeout(() => {
+				if (copyGlyph) copyGlyph.hidden = false;
+				if (checkGlyph) checkGlyph.hidden = true;
+				if (status) status.textContent = '';
+			}, 2000);
+		}
+
+		/*
+		 * On failure the glyph does NOT change and no success message appears.
+		 * Never show a success message for a copy that did not happen.
+		 *
+		 * Instead the address is selected, which is the real fallback: the
+		 * visitor can press the copy shortcut themselves. This is why the
+		 * address is on-screen as text in the first place.
+		 */
+		function fallbackToSelection() {
+			try {
+				const range = document.createRange();
+				range.selectNodeContents(link!);
+				const selection = window.getSelection();
+				selection?.removeAllRanges();
+				selection?.addRange(range);
+			} catch {
+				// Selection unavailable. The address is still visible and
+				// selectable by hand, which is the floor this design keeps.
+			}
+		}
+
+		button.addEventListener('click', async () => {
+			/*
+			 * Guarded because the Clipboard API is absent outside a secure
+			 * context, and can reject on a permission denial even where it
+			 * exists.
+			 */
+			if (!navigator.clipboard?.writeText) {
+				fallbackToSelection();
+				return;
+			}
+
+			try {
+				await navigator.clipboard.writeText(address);
+				showConfirmed();
+			} catch {
+				fallbackToSelection();
+			}
+		});
+	}
+</script>

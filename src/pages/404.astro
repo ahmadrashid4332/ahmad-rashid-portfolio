@@ -1,0 +1,44 @@
+---
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import { getSite } from '../lib/content';
+import { NAME } from '../lib/site-config';
+
+/*
+ * Custom 404, never the framework default.
+ *
+ * Same shell and type scale as the rest of the site. h1 at section scale, one
+ * plain sentence, one link home using the primary button treatment. Nothing
+ * clever (design.md section 5.9).
+ */
+const site = await getSite();
+---
+
+<Base
+	title={`Page not found, ${NAME}`}
+	description="That page does not exist. Head back to the homepage."
+>
+	<Nav />
+	<main class="container section">
+		<h1>Page not found</h1>
+		<p class="message">That page does not exist, or it has moved.</p>
+		<a class="btn btn-primary" href="/">Back to homepage</a>
+	</main>
+	<Footer githubUrl={site.githubUrl} linkedinUrl={site.linkedinUrl} />
+</Base>
+
+<style>
+	/* Section scale rather than hero scale: this is not the front door. */
+	h1 {
+		font-size: var(--size-h2);
+		letter-spacing: var(--track-h2);
+		line-height: var(--leading-h2);
+	}
+
+	.message {
+		max-width: var(--measure);
+		margin-block: var(--space-6) var(--space-8);
+		color: var(--text-muted);
+	}
+</style>

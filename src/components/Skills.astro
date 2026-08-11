@@ -1,0 +1,82 @@
+---
+import Tag from './Tag.astro';
+
+/*
+ * Label-and-tags rows with a hairline between groups. Not cards: a hairline and
+ * spacing do the job, so a bordered surface would be decoration
+ * (design.md sections 5.2 and 11).
+ *
+ * No proficiency indicator of any kind. No bars, no dots, no counts, and no
+ * ordering that implies rank. The prohibition binds the visual layer as well as
+ * the data model, and the schema carries no field that could feed one.
+ *
+ * Empty groups cannot reach here: the schema requires at least one item, so
+ * there is no way to render a group heading with nothing under it.
+ */
+interface Props {
+	groups: { category: string; items: string[] }[];
+}
+
+const { groups } = Astro.props;
+---
+
+<section id="skills" class="container section">
+	<h2>Skills</h2>
+
+	<div class="groups">
+		{
+			groups.map((group) => (
+				<div class="group">
+					<h3 class="label">{group.category}</h3>
+					<ul class="tags">
+						{group.items.map((item) => (
+							<Tag label={item} />
+						))}
+					</ul>
+				</div>
+			))
+		}
+	</div>
+</section>
+
+<style>
+	.groups {
+		margin-top: var(--space-8);
+	}
+
+	.group {
+		display: grid;
+		gap: var(--space-3);
+		padding-block: var(--space-6);
+		border-top: 1px solid var(--line);
+	}
+
+	.group:last-child {
+		border-bottom: 1px solid var(--line);
+	}
+
+	.label {
+		/* Hierarchy comes from weight and colour, not from size. This is a
+		 * heading for structure, not a display element. */
+		font-size: var(--size-body);
+		font-weight: var(--weight-medium);
+		color: var(--text);
+	}
+
+	.tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+
+	@media (min-width: 768px) {
+		.group {
+			grid-template-columns: var(--skills-label-col) 1fr;
+			gap: var(--space-6);
+			align-items: start;
+		}
+	}
+</style>

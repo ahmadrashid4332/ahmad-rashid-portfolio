@@ -1,0 +1,228 @@
+---
+import { Picture } from 'astro:assets';
+import { Icon } from 'astro-icon/components';
+import Tag from './Tag.astro';
+import { anyProjectHasImage, type ProjectEntry } from '../lib/content';
+
+/*
+ * The visual centre of the page, and the only section that will ever carry
+ * images. Two states, both built now (design.md section 5.5).
+ *
+ * STATE A, the launch state. No project has an image, so this renders as a
+ * hairline row list: no borders, no image area, no reserved gap, no placeholder
+ * block. A bordered box around three lines of text is exactly the empty
+ * container pattern the ban list exists to prevent, and the 1 + 2 asymmetry
+ * would have nothing to carry without a large image to feature.
+ *
+ * STATE B. At least one project has an image, so all projects render as
+ * bordered cards in the featured-plus-flow grid. Cards without an image simply
+ * omit the image area. Row and card treatments are never mixed within one list.
+ *
+ * One rule generates every layout: the newest project is always full width, and
+ * everything after it flows in a two-column grid. That gives 1 + 2 at three
+ * projects, 1 + 2 + 1 at four, and 1 + 2 + 2 at five, and it never produces a
+ * three-equal-cards row. A trailing odd card takes the left column and leaves
+ * the right empty, which reads as intentional against the left rail rather than
+ * stretching a second card to full width to compete with the featured one.
+ *
+ * ONE aspect ratio, 16:10, with object-fit: cover. Position-tied crops would
+ * break the first time he reordered from his phone, because the crop is baked
+ * into a committed asset while position is not.
+ */
+interface Props {
+	projects: ProjectEntry[];
+}
+
+const { projects } = Astro.props;
+const asCards = anyProjectHasImage(projects);
+---
+
+<section id="projects" class="container section">
+	<h2>Projects</h2>
+
+	<ul class:list={['list', asCards ? 'grid' : 'rows']}>
+		{
+			projects.map((project, index) => (
+				<li class:list={['item', asCards && 'card', asCards && index === 0 && 'featured']}>
+					{
+						/* No image means no image area at all. A grey rectangle
+						   standing in for a screenshot is a placeholder, and a
+						   placeholder on a portfolio is a claim about work that
+						   does not exist. */
+						asCards && project.data.image && (
+							<div class="shot">
+								{/*
+								   Picture rather than Image: Image emits a single
+								   format, and the default is WebP. AVIF first with a
+								   WebP fallback is required (spec.md section 9.2), and
+								   only <Picture> with explicit formats delivers that.
+
+								   Lazy on every image, because every image on this site
+								   sits below the fold. The usual "never lazy-load the
+								   hero" rule and fetchpriority="high" have nothing to
+								   apply to: the hero is type and the LCP element is the
+								   h1. If a hero image is ever introduced, both rules
+								   come back into force.
+
+								   Dimensions are inferred from the source by the image()
+								   helper, which is the single largest lever against CLS
+								   and the reason uploads land in src/assets rather than
+								   public/.
+								*/}
+								<Picture
+									src={project.data.image}
+									alt={project.data.imageAlt ?? ''}
+									formats={['avif', 'webp']}
+									widths={[480, 800, 1120]}
+									sizes="(min-width: 768px) 50vw, 100vw"
+									loading="lazy"
+									decoding="async"
+								/>
+							</div>
+						)
+					}
+
+					<h3>{project.data.title}</h3>
+					<p class="description">{project.data.description}</p>
+
+					<ul class="tech">
+						{project.data.tech.map((item) => (
+							<Tag label={item} />
+						))}
+					</ul>
+
+					{/* The whole card is not a link. This is an explicit control
+					    at a 44px target, and it is the only outbound link a
+					    project carries. */}
+					<a
+						class="visit"
+						href={project.data.liveUrl}
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						Visit site
+						<span class="arrow" aria-hidden="true">
+							<Icon name="ph:arrow-up-right" />
+						</span>
+						<span class="visually-hidden">{`, ${project.data.title}, opens in a new tab`}</span>
+					</a>
+				</li>
+			))
+		}
+	</ul>
+</section>
+
+<style>
+	.list {
+		list-style: none;
+		margin: var(--space-8) 0 0;
+		padding: 0;
+	}
+
+	.item {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-4);
+	}
+
+	.description {
+		max-width: var(--measure);
+		color: var(--text-muted);
+	}
+
+	.tech {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+
+	.visit {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		min-height: var(--target-min);
+		color: var(--accent);
+		font-weight: var(--weight-medium);
+		text-decoration: none;
+	}
+
+	.visit:hover {
+		color: var(--accent-strong);
+		text-decoration: underline;
+		text-underline-offset: 0.15em;
+	}
+
+	.arrow {
+		display: inline-flex;
+		line-height: 0;
+		transition: transform var(--duration-hover) var(--ease-out);
+	}
+
+	/* The entire hover treatment. Decorative only: nothing is revealed on
+	 * hover, so nothing is lost on touch. */
+	.visit:hover .arrow {
+		transform: translate(2px, -2px);
+	}
+
+	/* ---- State A: hairline rows ---- */
+
+	.rows .item {
+		padding-block: var(--space-8);
+		border-top: 1px solid var(--line);
+	}
+
+	.rows .item:last-child {
+		border-bottom: 1px solid var(--line);
+	}
+
+	/* ---- State B: bordered cards ---- */
+
+	.grid {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: var(--space-8);
+	}
+
+	.card {
+		padding: var(--space-6);
+		border: 1px solid var(--line);
+		border-radius: var(--radius);
+		transition: border-color var(--duration-hover) var(--ease-out);
+	}
+
+	.card:hover {
+		border-color: var(--text-muted);
+	}
+
+	.shot {
+		width: 100%;
+		overflow: hidden;
+		border: 1px solid var(--line);
+		border-radius: var(--radius);
+		/* No fake browser chrome, no traffic-light dots, no invented URL bar. */
+	}
+
+	.shot :global(img) {
+		width: 100%;
+		/* One ratio everywhere. The featured card simply renders it larger. */
+		aspect-ratio: 16 / 10;
+		object-fit: cover;
+	}
+
+	@media (min-width: 768px) {
+		.grid {
+			grid-template-columns: repeat(2, 1fr);
+		}
+
+		/* Newest spans the full content width. Everything after it flows into
+		 * the two columns, which is what produces 1+2, 1+2+1 and 1+2+2 without
+		 * a special case per count. */
+		.grid .featured {
+			grid-column: 1 / -1;
+		}
+	}
+</style>
