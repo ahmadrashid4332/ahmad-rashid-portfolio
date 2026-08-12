@@ -78,13 +78,27 @@ each costs one line and the failure is embarrassing:
    fetch it at all.
 3. A `<meta name="robots">` tag in the admin page itself.
 
-`vercel.json` needs **two** rules, not one. `/admin/:path*` does not match the
-bare `/admin` path with no trailing segment, so both are listed.
+`vercel.json` needs **three** rules, not one. The route matcher treats these as
+distinct, and each was confirmed against the live deployment:
 
-Verify the header against the live deployment rather than assuming it:
+| Rule | Covers |
+| --- | --- |
+| `/admin` | the bare path, no trailing slash |
+| `/admin/` | the trailing-slash form |
+| `/admin/:path*` | everything below, including `config.yml` |
+
+Only `/admin/:path*` is obvious. The other two were each found missing by testing
+the live site: `/admin/:path*` does not match `/admin`, and neither of those two
+matches `/admin/`.
+
+Verify all of them against the live deployment rather than assuming. Test every
+variant, because they fail independently:
 
 ```sh
-curl -sI https://ahmad-rashid-portfolio.vercel.app/admin | grep -i x-robots-tag
+for p in /admin /admin/ /admin/index.html /admin/config.yml; do
+  printf '%-20s %s\n' "$p" \
+    "$(curl -sI "https://ahmad-rashid-portfolio.vercel.app$p" | grep -i x-robots-tag)"
+done
 ```
 
 **`vercel.json` cannot carry comments.** Vercel validates it against a strict
