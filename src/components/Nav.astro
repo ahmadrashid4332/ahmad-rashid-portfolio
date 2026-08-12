@@ -63,6 +63,24 @@ const anchors = [
 	}
 
 	.wordmark {
+		/*
+		 * Sized to the 44px target minimum, not left at the 21x28px the two
+		 * glyphs happen to occupy. That box failed WCAG 2.2 SC 2.5.8 (Target
+		 * Size, Level AA) outright on width, which asks for 24x24, and missed
+		 * the stricter 44px bar this site sets for itself in --target-min.
+		 *
+		 * Layout-neutral on purpose. The box grows to the RIGHT and downward
+		 * from the glyph, into the empty gap before the nav, so "AR" stays
+		 * flush with the container gutter and in line with every other section's
+		 * left edge. justify-content is what keeps it there: without it the
+		 * glyph would centre itself in the new 44px box and shift right.
+		 */
+		display: inline-flex;
+		align-items: center;
+		justify-content: flex-start;
+		min-width: var(--target-min);
+		min-height: var(--target-min);
+
 		font-size: var(--size-body);
 		font-weight: var(--weight-heading);
 		letter-spacing: -0.02em;

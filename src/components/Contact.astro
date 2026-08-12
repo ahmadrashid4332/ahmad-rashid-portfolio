@@ -70,6 +70,22 @@ import { EMAIL } from '../lib/site-config';
 		 * inside the domain. */
 		white-space: nowrap;
 		min-width: 0;
+
+		/*
+		 * The link BOX is held at the 44px target minimum even though the text
+		 * itself is shorter than that. Below 400px the rule further down drops
+		 * the type to keep the address on one line, which took the tappable box
+		 * to 17px tall: under WCAG 2.2 SC 2.5.8 (Target Size, Level AA), which
+		 * asks 24x24, and far under this site's own --target-min.
+		 *
+		 * Costs no layout. The row is already 44px tall because the copy button
+		 * next to it is 44x44, so this only makes the link fill height that was
+		 * being left empty. align-items keeps the text optically where it was
+		 * rather than dropping it to the top of the taller box.
+		 */
+		display: inline-flex;
+		align-items: center;
+		min-height: var(--target-min);
 	}
 
 	.address:hover {
