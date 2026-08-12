@@ -33,5 +33,22 @@ const { label } = Astro.props;
 		letter-spacing: var(--track-tag);
 		line-height: var(--leading-tag);
 		/* No border. The fill alone separates it from body text. */
+
+		/*
+		 * "anywhere", not "break-word", and the difference is the whole point.
+		 *
+		 * Both permit a break inside a long token, but only "anywhere" also
+		 * shrinks the element's min-content width. Under "break-word" the grid
+		 * track keeps sizing itself to the longest unbreakable token, so nothing
+		 * is ever forced to wrap and the page widens instead.
+		 *
+		 * Measured at 320px: a tag survived to roughly 34 unbroken characters
+		 * and pushed the page wide from roughly 38, dragging the skills row and
+		 * the hero sentence out with it. No real tag is that long, but the tag
+		 * list is CMS-editable from a phone, so the ceiling was reachable by
+		 * typing. min-width: 0 closes the same failure through the flex parent.
+		 */
+		min-width: 0;
+		overflow-wrap: anywhere;
 	}
 </style>
