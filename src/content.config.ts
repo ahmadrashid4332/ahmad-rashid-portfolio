@@ -121,4 +121,25 @@ const skills = defineCollection({
 	}),
 });
 
+/*
+ * THREE collections here, FOUR in the CMS. That is deliberate, and the
+ * difference is worth stating rather than leaving as an apparent oversight.
+ *
+ * public/admin/config.yml also declares a "resume" collection pointing at
+ * src/data/resume.md. There is no matching collection below, and there should
+ * not be: the actual deliverable is the binary at public/files/resume.pdf, and
+ * the resume button reads RESUME_PATH from src/lib/site-config.ts, never an
+ * entry. The Markdown file exists only because a Git CMS needs a file to hang a
+ * file-upload widget on.
+ *
+ * That file is inert by construction. None of the three loaders below can match
+ * it: projects globs src/data/projects/, and the two singletons glob site.md and
+ * skills.md by exact name. So it is committed, ignored by the build, and cannot
+ * break one.
+ *
+ * The invariant is therefore "one schema for all CONTENT", not "one schema per
+ * CMS collection". A zod schema over a path string that nothing reads would be
+ * ceremony, and would imply the build validates a resume upload when it cannot:
+ * the PDF's existence is checked by the build guard in astro.config.mjs instead.
+ */
 export const collections = { projects, site, skills };
