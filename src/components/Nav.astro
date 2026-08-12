@@ -94,7 +94,14 @@ const anchors = [
 
 	.anchors {
 		display: none;
-		gap: var(--space-6);
+		/*
+		 * 8px here, not 24px. The anchors carry 8px of inline padding each so
+		 * that a short label still makes the 44px target, which means the gap
+		 * between two labels is 8 + 8 + 8 = 24px: identical to the 24px this
+		 * used to set directly. The spacing design.md asks for is unchanged;
+		 * only where it comes from moved.
+		 */
+		gap: var(--space-2);
 		list-style: none;
 		margin: 0;
 		padding: 0;
@@ -103,7 +110,16 @@ const anchors = [
 	.anchors a {
 		display: inline-flex;
 		align-items: center;
+		justify-content: center;
 		min-height: var(--target-min);
+		/*
+		 * "Skills" is 39px of text, so min-width alone would centre short
+		 * labels against a fixed box and leave the row unevenly spaced.
+		 * Padding grows every label by the same amount instead, so the target
+		 * clears 44px without the rhythm between them changing.
+		 */
+		min-width: var(--target-min);
+		padding-inline: var(--space-2);
 		color: var(--text-muted);
 		font-size: var(--size-body);
 		font-weight: var(--weight-medium);
