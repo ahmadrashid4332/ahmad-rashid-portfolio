@@ -30,7 +30,15 @@ groups:
       - Vite
       - Git
 
+  # Owner's decision, 2026-08-12: name the provider explicitly.
+  #
+  # "Agentic AI (Panaversity)" and NOT the program's own title, which is
+  # "Certified Agentic & Robotic AI Engineer". He is enrolled, not certified,
+  # and printing a program name that leads with "Certified" next to his skills
+  # is exactly how a reader concludes he holds a certificate he does not have.
+  # The provider is named; the word stays off the page until the certificate
+  # exists. The category already says "Currently studying".
   - category: Currently studying
     items:
-      - Agentic AI
+      - Agentic AI (Panaversity)
 ---
