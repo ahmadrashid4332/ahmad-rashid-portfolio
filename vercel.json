@@ -2,12 +2,10 @@
 	"$schema": "https://openapi.vercel.sh/vercel.json",
 	"headers": [
 		{
-			"//": "No Git-based CMS noindexes its admin route by default. Without this, his login page appears in search results for his name. Paired with a disallow in robots.txt and a meta robots tag in the admin page itself: three mechanisms, because the failure is embarrassing and each costs one line. Verified against the live deployment before launch, never assumed.",
 			"source": "/admin/:path*",
 			"headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
 		},
 		{
-			"//": "The bare /admin path, without a trailing segment, is not matched by the pattern above.",
 			"source": "/admin",
 			"headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
 		}

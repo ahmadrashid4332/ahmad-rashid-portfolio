@@ -66,6 +66,32 @@ Two rules the form cannot enforce for you:
    Uploading a file under another name publishes it alongside the old one and
    leaves the button pointing at the old file.
 
+### Why `/admin` is kept out of search
+
+No Git-based CMS noindexes its own admin route by default. Left alone, the login
+page turns up in search results for his name. Three mechanisms cover it, because
+each costs one line and the failure is embarrassing:
+
+1. `X-Robots-Tag: noindex, nofollow` in `vercel.json` — the one that actually
+   keeps it out of an index.
+2. `Disallow: /admin` in `robots.txt` — the polite half, asking crawlers not to
+   fetch it at all.
+3. A `<meta name="robots">` tag in the admin page itself.
+
+`vercel.json` needs **two** rules, not one. `/admin/:path*` does not match the
+bare `/admin` path with no trailing segment, so both are listed.
+
+Verify the header against the live deployment rather than assuming it:
+
+```sh
+curl -sI https://ahmad-rashid-portfolio.vercel.app/admin | grep -i x-robots-tag
+```
+
+**`vercel.json` cannot carry comments.** Vercel validates it against a strict
+schema that rejects unknown properties, so a `"//"` key inside a header rule
+fails the build — and because the file is never validated locally, that failure
+only appears on Vercel. Keep the reasoning here instead.
+
 ### Bumping Sveltia
 
 The CMS version is pinned in `public/admin/index.html`. It loads from a CDN and
